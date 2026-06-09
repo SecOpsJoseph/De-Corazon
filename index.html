@@ -9,18 +9,13 @@
 </head>
 <body>
 
-  <!-- Música de fondo -->
   <audio id="bg-music" src="cancion.m4a" loop></audio>
-
-  <!-- Partículas flotantes -->
   <div id="particles"></div>
 
-  <!-- Pantalla de transición -->
   <div id="transition-screen">
     <p class="transition-text">✨ Abriendo mi corazón solo para ti... ✨</p>
   </div>
 
-  <!-- Pantalla de candado -->
   <div id="lock-screen">
     <div class="lock-icon">🔐</div>
     <h1 class="lock-title">Algo especial te espera aquí</h1>
@@ -41,38 +36,11 @@
     </div>
   </div>
 
-  <!-- Pantalla del corazón -->
   <div id="heart-screen">
     <p class="heart-caption" id="heart-caption">
       "Tu nombre es la única palabra que mi mente repite mil veces al día."
     </p>
-
-    <!-- SVG corazón con clip-path + texto tiled -->
-    <svg id="heart-svg" viewBox="0 0 200 190" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <clipPath id="heart-clip">
-          <path d="M100,170 C100,170 20,120 20,65 C20,38 40,20 65,20 C80,20 92,28 100,38 C108,28 120,20 135,20 C160,20 180,38 180,65 C180,120 100,170 100,170 Z"/>
-        </clipPath>
-        <!-- Gradiente de rosa a dorado -->
-        <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stop-color="#c0394b"/>
-          <stop offset="50%"  stop-color="#e8758a"/>
-          <stop offset="100%" stop-color="#c9955c"/>
-        </linearGradient>
-      </defs>
-
-      <!-- Texto en mosaico dentro del clip -->
-      <g clip-path="url(#heart-clip)" id="heart-text-group" opacity="0">
-        <!-- Se genera con JS -->
-      </g>
-
-      <!-- Contorno del corazón -->
-      <path id="heart-outline"
-        d="M100,170 C100,170 20,120 20,65 C20,38 40,20 65,20 C80,20 92,28 100,38 C108,28 120,20 135,20 C160,20 180,38 180,65 C180,120 100,170 100,170 Z"
-        fill="none" stroke="url(#heartGrad)" stroke-width="1.5"
-        stroke-dasharray="500" stroke-dashoffset="500"/>
-    </svg>
-
+    <canvas id="heart-canvas"></canvas>
     <p class="final-msg" id="final-msg">
       Y cada vez que lo repito,<br>se me escapa una sonrisa que no puedo evitar. 🌹
     </p>
