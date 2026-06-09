@@ -25,7 +25,7 @@ for(let i=0;i<20;i++){
 }
 
 /* ══ CONTRASEÑA ══ */
-const VALID=['amor','cariño','carino','un abrazo','abrazo','tiempo','tu amor','mi amor'];
+const VALID=['todo','cariño','carino','un abrazo','abrazo','tiempo','tu amor',];
 const ERRORS=[
   "Casi... pero esa no es la llave de mi corazón. 🗝️",
   "Mmm, intenta de nuevo. Me gusta cuando te esfuerzas por entrar aquí. 😏",
