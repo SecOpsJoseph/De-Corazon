@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Para Ti 💌</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Música de fondo -->
+  <audio id="bg-music" src="cancion.m4a" loop></audio>
+
+  <!-- Partículas flotantes -->
+  <div id="particles"></div>
+
+  <!-- Pantalla de transición -->
+  <div id="transition-screen">
+    <p class="transition-text">✨ Abriendo mi corazón solo para ti... ✨</p>
+  </div>
+
+  <!-- Pantalla de candado -->
+  <div id="lock-screen">
+    <div class="lock-icon">🔐</div>
+    <h1 class="lock-title">Algo especial te espera aquí</h1>
+    <p class="lock-question">
+      ¿Qué es eso que <em>no se puede comprar</em>,<br>
+      pero que te doy cada vez que nos vemos?
+    </p>
+    <p class="hint">Escribe lo que sientes... 🌹</p>
+
+    <div class="input-wrap">
+      <input id="password-input" type="text" placeholder="Tu respuesta..." autocomplete="off" />
+      <button class="send-btn" onclick="checkPassword()">💌</button>
+    </div>
+
+    <p class="error-msg" id="error-msg"></p>
+
+    <div class="attempt-dots" id="dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <!-- Pantalla del corazón -->
+  <div id="heart-screen">
+    <p class="heart-caption" id="heart-caption">
+      "Tu nombre es la única palabra que mi mente repite mil veces al día."
+    </p>
+    <canvas id="heart-canvas" width="340" height="320"></canvas>
+    <p class="final-msg" id="final-msg">
+      Y cada vez que lo repito,<br>se me escapa una sonrisa que no puedo evitar. 🌹
+    </p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
