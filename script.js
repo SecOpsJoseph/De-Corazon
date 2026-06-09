@@ -1,11 +1,9 @@
 /* ── MÚSICA DE FONDO ── */
 const music = document.getElementById('bg-music');
 music.volume = 0.5;
-document.addEventListener('click', () => {
-  music.play();
-}, { once: true });
+document.addEventListener('click', () => { music.play(); }, { once: true });
 
-/* ── PARTÍCULAS DE FONDO ── */
+/* ── PARTÍCULAS ── */
 const emojis = ['🌹','💕','✨','🌸','💫','❣️','🌺','💝'];
 const pContainer = document.getElementById('particles');
 for (let i = 0; i < 20; i++) {
@@ -20,7 +18,7 @@ for (let i = 0; i < 20; i++) {
 }
 
 /* ── CONTRASEÑA ── */
-const VALID = ['amor', 'cariño', 'carino', 'un abrazo', 'abrazo', 'tiempo', 'tu amor', 'mi amor'];
+const VALID = ['amor','cariño','carino','un abrazo','abrazo','tiempo','tu amor','mi amor'];
 const errors = [
   "Casi... pero esa no es la llave de mi corazón. 🗝️",
   "Mmm, intenta de nuevo. Me gusta cuando te esfuerzas por entrar aquí. 😏",
@@ -67,110 +65,77 @@ function enterHeart() {
   }, 2200);
 }
 
-/* ── PANTALLA CORAZÓN ── */
+/* ── MOSTRAR PANTALLA CORAZÓN ── */
 function showHeart() {
   const hs = document.getElementById('heart-screen');
   hs.style.display = 'flex';
+  hs.style.animation = 'fadeIn 1s ease';
+
+  // 1. Frase aparece
   setTimeout(() => {
     document.getElementById('heart-caption').classList.add('visible');
-  }, 600);
-  setTimeout(() => drawHeart(), 1200);
+  }, 500);
+
+  // 2. Contorno se dibuja
+  setTimeout(() => {
+    document.getElementById('heart-outline').classList.add('draw');
+  }, 1200);
+
+  // 3. Relleno de palabras aparece
+  setTimeout(() => {
+    buildHeartText();
+  }, 1800);
+
+  // 4. Mensaje final
   setTimeout(() => {
     document.getElementById('final-msg').classList.add('visible');
-  }, 6000);
+  }, 6500);
 }
 
-/* ── CORAZÓN RELLENO CON "Jhannara" ── */
-function drawHeart() {
-  const canvas = document.getElementById('heart-canvas');
+/* ── CORAZÓN RELLENO CON SVG TEXT ── */
+function buildHeartText() {
+  const group = document.getElementById('heart-text-group');
+  const name  = 'Jhannara ';   // espacio para separar repeticiones
+  const word  = name.repeat(3); // "Jhannara Jhannara Jhannara "
 
-  // Tamaño: ocupa casi todo el ancho del móvil
-  const size = Math.min(window.innerWidth - 32, 380);
-  canvas.width  = size;
-  canvas.height = size * 0.92;
+  // Colores del gradiente para cada fila
+  const colors = [
+    '#c0394b','#c8404f','#d05060','#d86070',
+    '#e07080','#e8758a','#e87a8f','#dd8090',
+    '#d09070','#c9955c'
+  ];
 
-  const ctx  = canvas.getContext('2d');
-  const W    = canvas.width;
-  const H    = canvas.height;
-  const name = 'Jhannara';
-
-  // Paso pequeño = más denso
-  const fontSize = 11;
-  const stepX    = fontSize * 0.95;   // casi sin espacio horizontal
-  const stepY    = fontSize * 1.15;   // poco espacio vertical
-
-  ctx.font         = `bold ${fontSize}px 'Lato', sans-serif`;
-  ctx.textAlign    = 'left';
-  ctx.textBaseline = 'top';
-
-  // Centro y escala del corazón
-  const scale = size * 0.032;
-  const cx    = W / 2;
-  const cy    = H / 2 + size * 0.06;
-
-  // Recopilar todos los puntos
-  const all = [];
-  for (let py = 2; py < H; py += stepY) {
-    for (let px = 2; px < W; px += stepX) {
-      const nx  = (px - cx) / scale;
-      const ny  = (py - cy) / scale;
-      // Ecuación implícita del corazón
-      const val = Math.pow(nx * nx + ny * ny - 1, 3) - nx * nx * Math.pow(ny, 3);
-      if (val <= 0.08) {   // <= 0 es interior, 0.08 incluye el borde
-        all.push({ x: px, y: py });
-      }
-    }
+  // Filas de texto que llenan el corazón
+  // viewBox es 200x190, corazón va de y≈20 a y≈170
+  const rows = [];
+  for (let y = 26; y <= 168; y += 11) {
+    rows.push(y);
   }
 
-  shuffle(all);
+  const allTexts = [];
 
-  let i = 0;
-  let nameIdx = 0;
+  rows.forEach((y, rowIdx) => {
+    const colorIdx = Math.floor((rowIdx / rows.length) * colors.length);
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', '5');
+    t.setAttribute('y', String(y));
+    t.setAttribute('font-family', "'Lato', sans-serif");
+    t.setAttribute('font-weight', 'bold');
+    t.setAttribute('font-size', '9');
+    t.setAttribute('fill', colors[Math.min(colorIdx, colors.length - 1)]);
+    t.setAttribute('opacity', '0');
+    // Repetir el nombre muchas veces para que llene el ancho
+    t.textContent = word.repeat(8);
+    group.appendChild(t);
+    allTexts.push(t);
+  });
 
-  const interval = setInterval(() => {
-    if (i >= all.length) { clearInterval(interval); return; }
-
-    // Dibujar de a 8 letras por tick
-    const batch = Math.min(8, all.length - i);
-    for (let b = 0; b < batch; b++) {
-      const pt  = all[i + b];
-      const t   = (i + b) / all.length;
-
-      ctx.fillStyle   = interpolateColor(t);
-      ctx.globalAlpha = 0.92;
-      // Letra siguiente del nombre en ciclo
-      ctx.fillText(name[nameIdx % name.length], pt.x, pt.y);
-      nameIdx++;
-    }
-    i += batch;
-  }, 18);
+  // Aparecen de a poco, fila por fila
+  allTexts.forEach((el, i) => {
+    setTimeout(() => {
+      el.setAttribute('opacity', '0.92');
+    }, i * 80);
+  });
 }
 
-/* ── COLORES: rosa oscuro → rosa suave → dorado ── */
-function interpolateColor(t) {
-  const c1 = [192, 57,  75];
-  const c2 = [232, 117, 138];
-  const c3 = [201, 149, 92];
-  let r, g, b;
-  if (t < 0.5) {
-    const u = t * 2;
-    r = lerp(c1[0], c2[0], u);
-    g = lerp(c1[1], c2[1], u);
-    b = lerp(c1[2], c2[2], u);
-  } else {
-    const u = (t - 0.5) * 2;
-    r = lerp(c2[0], c3[0], u);
-    g = lerp(c2[1], c3[1], u);
-    b = lerp(c2[2], c3[2], u);
-  }
-  return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
-}
-
-const lerp = (a, b, t) => a + (b - a) * t;
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
+function lerp(a, b, t) { return a + (b - a) * t; }
