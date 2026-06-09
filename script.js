@@ -43,12 +43,10 @@ function checkPassword() {
   } else {
     const errEl = document.getElementById('error-msg');
     input.classList.remove('shake');
-    void input.offsetWidth; // forzar reflow para reiniciar animación
+    void input.offsetWidth;
     input.classList.add('shake');
     errEl.textContent = errors[Math.min(attempts, errors.length - 1)];
     errEl.classList.add('show');
-
-    // Marcar punto de intento
     const dots = document.querySelectorAll('#dots .dot');
     if (attempts < dots.length) dots[attempts].classList.add('used');
     attempts++;
@@ -76,79 +74,67 @@ function showHeart() {
   const hs = document.getElementById('heart-screen');
   hs.style.display = 'flex';
 
-  // Mostrar frase mientras se forma el corazón
   setTimeout(() => {
     document.getElementById('heart-caption').classList.add('visible');
   }, 600);
 
-  // Dibujar corazón con el nombre Jhannara
   setTimeout(() => drawHeart(), 1400);
 
-  // Mostrar mensaje final al terminar
   setTimeout(() => {
     document.getElementById('final-msg').classList.add('visible');
   }, 5000);
 }
 
-/* ── CORAZÓN DE LETRAS ── */
+/* ── CORAZÓN DE LETRAS (relleno completo, centrado, responsivo) ── */
 function drawHeart() {
   const canvas = document.getElementById('heart-canvas');
+
+  // Tamaño responsivo sin recortes
+  const size = Math.min(window.innerWidth - 48, 360);
+  canvas.width  = size;
+  canvas.height = size;
+
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
 
-  const name = 'Jhannara'; // ← el nombre que forma el corazón
+  const name  = 'Jhannara';
+  const scale = size * 0.028;
+  const cx    = W / 2;
+  const cy    = H / 2 + size * 0.04;
+  const step  = Math.max(9, Math.round(size * 0.028));
 
-  // Contorno del corazón (paramétrica)
-  const points = [];
-  for (let t = 0; t <= Math.PI * 2; t += 0.04) {
-    const x = 16 * Math.pow(Math.sin(t), 3);
-    const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
-    points.push({
-      x: W / 2 + x * 10.5,
-      y: H / 2 + y * 10.5 - 10
-    });
-  }
-
-  // Relleno interior (grid de puntos dentro del corazón)
-  const filled = [];
-  const step = 14;
-  for (let px = step; px < W - step; px += step) {
-    for (let py = step; py < H - step; py += step) {
-      if (insideHeart(px, py, W, H)) {
-        filled.push({ x: px, y: py });
-      }
+  // Todos los puntos DENTRO del corazón (relleno completo)
+  const all = [];
+  for (let px = 4; px < W - 4; px += step) {
+    for (let py = 4; py < H - 4; py += step) {
+      const nx  = (px - cx) / scale;
+      const ny  = (py - cy) / scale;
+      const val = Math.pow(nx * nx + ny * ny - 1, 3) - nx * nx * Math.pow(ny, 3);
+      if (val <= 0) all.push({ x: px, y: py });
     }
   }
 
-  const all = [...points, ...filled];
   shuffle(all);
+
+  ctx.font         = `bold ${Math.round(step * 0.85)}px 'Lato', sans-serif`;
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
 
   let i = 0;
   const interval = setInterval(() => {
     if (i >= all.length) { clearInterval(interval); return; }
-    const batch = Math.min(4, all.length - i);
+    const batch = Math.min(6, all.length - i);
     for (let b = 0; b < batch; b++) {
       const pt = all[i + b];
-      ctx.font = 'bold 10px Lato';
-      ctx.fillStyle = interpolateColor(i / all.length);
-      ctx.globalAlpha = 0.85;
+      ctx.fillStyle  = interpolateColor(i / all.length);
+      ctx.globalAlpha = 0.9;
       ctx.fillText(name[Math.floor(Math.random() * name.length)], pt.x, pt.y);
     }
     i += batch;
-  }, 28);
-}
-
-function insideHeart(px, py, W, H) {
-  const scale = 10.5;
-  const cx = W / 2, cy = H / 2 - 10;
-  const nx = (px - cx) / scale;
-  const ny = (py - cy) / scale;
-  const val = Math.pow(nx * nx + ny * ny - 1, 3) - nx * nx * Math.pow(ny, 3);
-  return val <= 0;
+  }, 22);
 }
 
 function interpolateColor(t) {
-  // deep rose → soft pink → gold
   const r1 = [192, 57, 75], r2 = [232, 117, 138], r3 = [201, 149, 92];
   let r, g, b;
   if (t < 0.5) {
