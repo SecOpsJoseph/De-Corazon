@@ -23,9 +23,9 @@ body {
   animation: floatUp var(--dur) ease-in infinite; animation-delay: var(--delay);
 }
 @keyframes floatUp {
-  0%   { opacity:0; transform:translateY(0) scale(0.5); }
-  20%  { opacity:0.6; } 80% { opacity:0.4; }
-  100% { opacity:0; transform:translateY(-100vh) scale(1.1); }
+  0%{opacity:0;transform:translateY(0) scale(0.5);}
+  20%{opacity:0.6;} 80%{opacity:0.4;}
+  100%{opacity:0;transform:translateY(-100vh) scale(1.1);}
 }
 #lock-screen {
   position: relative; z-index: 10;
@@ -227,46 +227,93 @@ function showHeart(){
   hs.style.animation='fadeIn 1s ease';
   setTimeout(()=>{ document.getElementById('heart-caption').classList.add('visible'); },500);
   setTimeout(()=>{ drawHeart(); },1000);
-  setTimeout(()=>{ document.getElementById('final-msg').classList.add('visible'); },7000);
+  setTimeout(()=>{ document.getElementById('final-msg').classList.add('visible'); },8000);
 }
 
-/* CORAZÓN DENSO */
+/* ══ CORAZÓN DENSO — letra por letra ══ */
 function drawHeart(){
   const canvas=document.getElementById('heart-canvas');
-  const SIZE=Math.min(window.innerWidth-16,520);
-  canvas.width=SIZE; canvas.height=SIZE;
-  canvas.style.width=SIZE+'px'; canvas.style.height=SIZE+'px';
+
+  // Tamaño: casi todo el ancho de pantalla
+  const SIZE=Math.min(window.innerWidth - 8, 480);
+  canvas.width=SIZE;
+  canvas.height=SIZE;
+  canvas.style.width=SIZE+'px';
+  canvas.style.height=SIZE+'px';
+
   const ctx=canvas.getContext('2d');
-  const cx=SIZE/2, cy=SIZE*0.47, sc=SIZE*0.29;
-  const FS=Math.max(9,Math.round(SIZE/46));
-  const stepX=(8*FS*0.62)+FS*0.62;
-  const stepY=FS*1.65;
-  const CL=['#c0394b','#c73d50','#cf4256','#d8526a','#e06378'];
-  const CR=['#e8758a','#e07888','#d47a78','#c98068','#c9955c'];
-  const rows=[];
-  for(let py=stepY*0.4; py<SIZE-stepY*0.3; py+=stepY){
-    const rw=[];
-    const off=(Math.floor(py/stepY)%2===0)?0:stepX*0.5;
-    for(let px=-off; px<SIZE+stepX; px+=stepX){
-      const mx=px+stepX/2, my=py;
-      const x=(mx-cx)/sc, y=-(my-cy)/sc;
-      if(Math.pow(x*x+y*y-1,3)-x*x*y*y*y<=0.04){
-        rw.push({x:px,y:py,left:mx<=cx});
+
+  // Centro y escala del corazón
+  const cx=SIZE/2;
+  const cy=SIZE*0.47;
+  const sc=SIZE*0.30;
+
+  // Fuente pequeña para densidad máxima
+  const FS=Math.max(7, Math.round(SIZE/56));
+  const stepX=FS*0.72;
+  const stepY=FS*1.28;
+
+  // Nombres: izquierda=Jhannara, derecha=Joseph
+  const LEFT ='Jhannara';
+  const RIGHT='Joseph';
+
+  // Paleta de colores por fila (arriba=rosa oscuro, abajo=dorado)
+  function getColor(t, isLeft){
+    // t va de 0 (arriba) a 1 (abajo)
+    const colors = isLeft
+      ? ['#c0394b','#c73d50','#cf4256','#d8526a','#e06378','#e8758a']
+      : ['#c0394b','#c8455a','#d05568','#d86878','#e07888','#c98068'];
+    const i=Math.floor(t*(colors.length-1));
+    return colors[Math.min(i,colors.length-1)];
+  }
+
+  // Recopilar todos los puntos dentro del corazón
+  const allPoints=[];
+  let rowIdx=0;
+  for(let py=stepY*0.3; py<SIZE; py+=stepY){
+    for(let px=0; px<SIZE; px+=stepX){
+      const x=(px-cx)/sc;
+      const y=-(py-cy)/sc;
+      const val=Math.pow(x*x+y*y-1,3)-x*x*y*y*y;
+      if(val<=0){
+        allPoints.push({
+          x:px, y:py,
+          row:rowIdx,
+          isLeft: px < cx
+        });
       }
     }
-    if(rw.length) rows.push(rw);
+    rowIdx++;
   }
-  const total=rows.length;
-  rows.forEach((row,ri)=>{
+
+  const totalRows=rowIdx;
+  let lIdx=0, rIdx=0;
+
+  // Agrupar por fila y dibujar fila por fila
+  const byRow={};
+  allPoints.forEach(p=>{
+    if(!byRow[p.row]) byRow[p.row]=[];
+    byRow[p.row].push(p);
+  });
+
+  const rows=Object.keys(byRow).map(Number).sort((a,b)=>a-b);
+
+  rows.forEach((r,i)=>{
     setTimeout(()=>{
-      const ci=Math.floor((ri/total)*(CL.length-1));
-      row.forEach(w=>{
-        ctx.font='bold '+FS+'px Arial,sans-serif';
-        ctx.fillStyle=w.left?CL[ci]:CR[ci];
-        ctx.globalAlpha=0.92;
-        ctx.fillText(w.left?'Jhannara':'Joseph',w.x,w.y);
+      const t=i/totalRows;
+      ctx.font='bold '+FS+'px Arial,sans-serif';
+      ctx.textBaseline='top';
+      ctx.globalAlpha=0.93;
+
+      byRow[r].forEach(p=>{
+        ctx.fillStyle=getColor(t, p.isLeft);
+        const ch = p.isLeft
+          ? LEFT[lIdx % LEFT.length]
+          : RIGHT[rIdx % RIGHT.length];
+        if(p.isLeft) lIdx++; else rIdx++;
+        ctx.fillText(ch, p.x, p.y);
       });
-    },ri*50);
+    }, i*40);
   });
 }
 
