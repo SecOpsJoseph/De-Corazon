@@ -11,11 +11,36 @@
   --rose: #c0394b; --rose-soft: #e8758a;
   --cream: #fff8f9; --ink: #2a1a1e; --muted: #9b6472;
 }
+html {
+  background: var(--cream);
+  border: 12px solid var(--rose);
+  border-image: repeating-linear-gradient(
+    45deg,
+    var(--rose),
+    var(--rose) 2px,
+    var(--rose-soft) 2px,
+    var(--rose-soft) 4px
+  ) 12;
+  box-shadow: inset 0 0 0 3px var(--cream), inset 0 0 0 6px var(--rose);
+}
 body {
   font-family: 'Lato', sans-serif;
   background: var(--cream); color: var(--ink);
   min-height: 100vh; display: flex;
   align-items: flex-start; justify-content: center; padding: 20px 0;
+  position: relative;
+}
+body::before {
+  content: '✨ 💕 ✨';
+  position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
+  font-size: 24px; z-index: 999;
+  letter-spacing: 12px;
+}
+body::after {
+  content: '✨ 💕 ✨';
+  position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%);
+  font-size: 24px; z-index: 999;
+  letter-spacing: 12px;
 }
 #particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
 .particle {
@@ -117,7 +142,7 @@ body {
   max-width: 420px; line-height: 1.6; opacity: 0; transition: opacity 1s ease;
 }
 .heart-caption.visible { opacity: 1; }
-#heart-canvas { display: block; max-width: 100%; }
+#heart-canvas { display: block; max-width: 100%; width: 100%; height: auto; aspect-ratio: 1 / 1; }
 .final-msg {
   font-family: 'Playfair Display', serif;
   font-size: clamp(1rem,3vw,1.2rem); color: var(--muted); font-style: italic;
@@ -333,6 +358,8 @@ function drawHeart(){
 
   const ctx = canvas.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, SIZE, SIZE);
+  ctx.imageSmoothingEnabled = true;
 
   // Centro y escala del corazón
   const cx = SIZE / 2;
