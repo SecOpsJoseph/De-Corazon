@@ -69,6 +69,18 @@ body {
   display: flex; align-items: center; justify-content: center;
 }
 .send-btn:hover { background: #a02e3e; }
+.button-row {
+  display: flex; justify-content: center; margin-top: 14px;
+}
+.action-btn {
+  background: #fff; color: var(--rose);
+  border: 2px solid var(--rose); border-radius: 999px;
+  padding: 10px 18px; cursor: pointer;
+  font-size: 0.95rem; transition: background 0.3s, color 0.3s, transform 0.2s;
+}
+.action-btn:hover {
+  background: var(--rose); color: #fff; transform: translateY(-1px);
+}
 .error-msg {
   font-family: 'Playfair Display', serif; font-style: italic;
   font-size: 0.95rem; color: var(--rose);
@@ -126,15 +138,19 @@ body {
 
   <div id="lock-screen">
     <div class="lock-icon">🔐</div>
-    <h1 class="lock-title">Algo especial te espera aquí</h1>
+    <h1 class="lock-title">Antes de seguir, un pequeño juego para nosotros...</h1>
     <p class="lock-question">
-      ¿Qué es eso que <em>no se puede comprar</em>,<br>
+      ¿Qué es eso que <em>nose puede</em>,<br>
       pero que te doy cada vez que nos vemos?
     </p>
+    <p class="hint" id="question-counter">Pregunta 1 de 3</p>
     <p class="hint">Escribe lo que sientes... 🌹</p>
     <div class="input-wrap">
       <input id="password-input" type="text" placeholder="Tu respuesta..." autocomplete="off"/>
       <button class="send-btn" onclick="checkPassword()">💌</button>
+    </div>
+    <div class="button-row">
+      <button id="shuffle-btn" class="action-btn" type="button" onclick="shuffleQuestion()">🔄 Rolar pregunta</button>
     </div>
     <p class="error-msg" id="error-msg"></p>
     <div class="attempt-dots" id="dots">
@@ -176,36 +192,101 @@ function tryPlay(){ music.play().catch(()=>{}); }
 document.addEventListener('touchstart',tryPlay,{once:true});
 document.addEventListener('click',tryPlay,{once:true});
 
-/* CONTRASEÑA */
-const VALID=['amor','cariño','carino','un abrazo','abrazo','tiempo','tu amor','mi amor'];
-const ERRORS=[
+/* PREGUNTAS Y RESPUESTAS */
+const QUESTIONS = [
+  {
+    question: `¿Cual de los dos <em>ama mas</em> uno al otro?`,
+    answers: ['ambos']
+  },
+  {
+    question: `¿Que fue lo que <em>nos unio</em> desde el principio?`,
+    answers: ['destino']
+  },
+  {
+    question: `¿Cal es la razon por la que <em>seguimos aqui</em>?`,
+    answers: ['destino','sincronia']
+  },
+  {
+    question: `¿Cual es el color <em>favorito</em> de Joseph?`,
+    answers: ['amarillo']
+  },
+  {
+    question: `¿Si tuvieramos que <em>sellar lo nuestro</em> con una sola palabra, ¿Cual seria?`,
+    answers: ['siempre','juntos','eternidad','inseparables']
+  }
+];
+const ERROR_MESSAGES = [
   "Casi... pero esa no es la llave de mi corazón. 🗝️",
   "Mmm, intenta de nuevo. Me gusta cuando te esfuerzas por entrar aquí. 😏",
   "Eso no es... pero me encanta que estés intentando descubrir mis secretos. 🌹"
 ];
-let attempts=0;
-document.getElementById('password-input').addEventListener('keydown',e=>{
-  if(e.key==='Enter') checkPassword();
+const SUCCESS_MESSAGES = [
+  "¡Exacto! Ahora vamos con la siguiente pregunta... 💫",
+  "Bien hecho, sigamos... 🌹",
+  "Perfecto, ya casi llegamos al final... ✨"
+];
+let currentQuestionIndex = 0;
+let attempts = 0;
+
+document.getElementById('password-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
 });
-function checkPassword(){
-  const input=document.getElementById('password-input');
-  const val=input.value.trim().toLowerCase();
-  if(!val) return;
-  if(VALID.includes(val)){
+
+document.addEventListener('DOMContentLoaded', () => loadQuestion(currentQuestionIndex));
+
+function loadQuestion(index) {
+  const q = QUESTIONS[index];
+  document.querySelector('.lock-question').innerHTML = q.question;
+  document.getElementById('question-counter').textContent = `Pregunta ${index + 1} de ${QUESTIONS.length}`;
+  document.getElementById('error-msg').textContent = '';
+  document.getElementById('error-msg').classList.remove('show');
+  document.getElementById('password-input').value = '';
+  attempts = 0;
+  document.querySelectorAll('#dots .dot').forEach(dot => dot.classList.remove('used'));
+}
+
+function shuffleQuestion() {
+  if (QUESTIONS.length <= 1) return;
+  let nextIndex = currentQuestionIndex;
+  while (nextIndex === currentQuestionIndex) {
+    nextIndex = Math.floor(Math.random() * QUESTIONS.length);
+  }
+  currentQuestionIndex = nextIndex;
+  loadQuestion(currentQuestionIndex);
+}
+
+function checkPassword() {
+  const input = document.getElementById('password-input');
+  const val = input.value.trim().toLowerCase();
+  if (!val) return;
+  const q = QUESTIONS[currentQuestionIndex];
+  if (q.answers.includes(val)) {
     tryPlay();
-    enterHeart();
+    if (currentQuestionIndex < QUESTIONS.length - 1) {
+      const errEl = document.getElementById('error-msg');
+      errEl.textContent = SUCCESS_MESSAGES[currentQuestionIndex % SUCCESS_MESSAGES.length];
+      errEl.classList.add('show');
+      setTimeout(() => {
+        currentQuestionIndex += 1;
+        loadQuestion(currentQuestionIndex);
+      }, 1000);
+    } else {
+      enterHeart();
+    }
   } else {
-    const errEl=document.getElementById('error-msg');
+    const errEl = document.getElementById('error-msg');
     input.classList.remove('shake');
     void input.offsetWidth;
     input.classList.add('shake');
-    errEl.textContent=ERRORS[Math.min(attempts,ERRORS.length-1)];
+    errEl.textContent = val.includes('amor')
+      ? 'Tambiennnn, pero no es la unica respuesta'
+      : ERROR_MESSAGES[Math.min(attempts, ERROR_MESSAGES.length - 1)];
     errEl.classList.add('show');
-    const dots=document.querySelectorAll('#dots .dot');
-    if(attempts<dots.length) dots[attempts].classList.add('used');
+    const dots = document.querySelectorAll('#dots .dot');
+    if (attempts < dots.length) dots[attempts].classList.add('used');
     attempts++;
-    input.value='';
-    setTimeout(()=>input.classList.remove('shake'),500);
+    input.value = '';
+    setTimeout(() => input.classList.remove('shake'), 500);
   }
 }
 
