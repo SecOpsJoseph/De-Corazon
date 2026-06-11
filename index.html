@@ -325,17 +325,19 @@ function drawHeart(){
 
   // Tamaño: casi todo el ancho de pantalla
   const SIZE=Math.min(window.innerWidth - 8, 480);
-  canvas.width=SIZE;
-  canvas.height=SIZE;
-  canvas.style.width=SIZE+'px';
-  canvas.style.height=SIZE+'px';
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(SIZE * dpr);
+  canvas.height = Math.round(SIZE * dpr);
+  canvas.style.width = SIZE + 'px';
+  canvas.style.height = SIZE + 'px';
 
-  const ctx=canvas.getContext('2d');
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   // Centro y escala del corazón
-  const cx=SIZE/2;
-  const cy=SIZE*0.47;
-  const sc=SIZE*0.30;
+  const cx = SIZE / 2;
+  const cy = SIZE * 0.47;
+  const sc = SIZE * 0.30;
 
   // Fuente pequeña para densidad máxima
   const FS=Math.max(7, Math.round(SIZE/56));
