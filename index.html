@@ -188,9 +188,27 @@ for(let i=0;i<20;i++){
 
 /* MÚSICA */
 const music=document.getElementById('bg-music');
-function tryPlay(){ music.play().catch(()=>{}); }
-document.addEventListener('touchstart',tryPlay,{once:true});
-document.addEventListener('click',tryPlay,{once:true});
+music.volume = 0;
+
+function fadeInMusic(duration = 3000) {
+  const startTime = Date.now();
+  const maxVolume = 0.7;
+  
+  const fadeInterval = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    music.volume = maxVolume * progress;
+    
+    if (progress === 1) clearInterval(fadeInterval);
+  }, 50);
+}
+
+function tryPlay() {
+  music.play().catch(() => {});
+  fadeInMusic();
+}
+document.addEventListener('touchstart', tryPlay, {once: true});
+document.addEventListener('click', tryPlay, {once: true});
 
 /* PREGUNTAS Y RESPUESTAS */
 const QUESTIONS = [
@@ -218,7 +236,7 @@ const QUESTIONS = [
 const ERROR_MESSAGES = [
   "Casi... pero esa no es la llave de mi corazón. 🗝️",
   "Mmm, intenta de nuevo. Me gusta cuando te esfuerzas por entrar aquí. 😁",
-  "Eso no es... pero me encanta que estés intentando descubrir mis secretos. 🌹"
+  "Eso no es... pero me encanta que lo estés intentando. 🌹"
 ];
 const SUCCESS_MESSAGES = [
   "¡Exacto! Ahora vamos con la siguiente pregunta... 💫",
@@ -262,24 +280,14 @@ function checkPassword() {
   const q = QUESTIONS[currentQuestionIndex];
   if (q.answers.includes(val)) {
     tryPlay();
-    if (currentQuestionIndex < QUESTIONS.length - 1) {
-      const errEl = document.getElementById('error-msg');
-      errEl.textContent = SUCCESS_MESSAGES[currentQuestionIndex % SUCCESS_MESSAGES.length];
-      errEl.classList.add('show');
-      setTimeout(() => {
-        currentQuestionIndex += 1;
-        loadQuestion(currentQuestionIndex);
-      }, 1000);
-    } else {
-      enterHeart();
-    }
+    enterHeart();
   } else {
     const errEl = document.getElementById('error-msg');
     input.classList.remove('shake');
     void input.offsetWidth;
     input.classList.add('shake');
     errEl.textContent = val.includes('amor')
-      ? 'Tambiennnn, pero no es la unica respuesta'
+      ? 'Tambiennnn, pero no es la unica respuesta.'
       : ERROR_MESSAGES[Math.min(attempts, ERROR_MESSAGES.length - 1)];
     errEl.classList.add('show');
     const dots = document.querySelectorAll('#dots .dot');
